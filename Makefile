@@ -6,5 +6,5 @@ export
 build-api:
 	go build -o bin/api ./cmd/api
 
-run-api:
-	go run ./cmd/api
+run-api:build-api
+	./bin/api

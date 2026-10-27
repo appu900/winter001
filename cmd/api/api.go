@@ -19,6 +19,10 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("all ok"))
 	})
+
+	mux.HandleFunc("GET /users",func(w http.ResponseWriter, r * http.Request){
+		w.Write([]byte("users details bro here are here"))
+	})
 	return mux
 }
 

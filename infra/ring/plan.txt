@@ -1,0 +1,82 @@
+Phase 1
+Days 1–2
+
+Implement the ring algorithm
+
+Build hash.go, tokens.go, snapshot.go, and lookup.go.
+- Use a stable 64-bit hash of the cache key.
+- Assign multiple virtual tokens to each node.
+- Keep tokens sorted.
+- Find the first token greater than or equal to the key hash using sort.Search; wrap to index zero if needed.
+- Return the owner deterministically.
+Done when: 100,000 generated keys produce repeatable owners, and adding one node doesn't move every key.
+
+
+
+Phase 2
+Days 3–4
+
+Add replication and zone awareness
+
+Implement replicas.go and zones.go.
+- Walk clockwise around the ring.
+- Select distinct node IDs; multiple virtual tokens must never count as multiple replicas.
+- Prefer one replica per zone when enough zones are available.
+- Define what happens when fewer than RF eligible nodes exist.
+- Return an explicit error or degraded result rather than silently claiming the full RF was achieved.
+Done when: every returned replica set respects your policy and contains no duplicate nodes.
+
+
+
+Phase 3
+Days 5–7
+
+Build membership and immutable snapshots
+
+Implement membership/registry.go, heartbeat.go, and watcher.go.
+- Give each node a stable identity, address, zone, state, and membership epoch or version.
+- Register and renew leases with a shared authoritative membership backend.
+- Publish topology changes through a watch or polling mechanism.
+- Rebuild the ring snapshot off the read path.
+- Atomically publish the new snapshot.
+For an initial implementation, an etcd-backed registry is a reasonable choice. If you use a different backend, keep it behind the Membership interface.
+
+Done when: multiple cache nodes converge on the same topology version and readers never see a partially built snapshot.
+
+
+
+Phase 4
+Days 8–10
+
+Implement failure handling
+- Use heartbeats or leases for failure suspicion.
+- Distinguish a node that is unreachable from one that has been authoritatively removed.
+- Exclude failed nodes from new replica selections according to your policy.
+- Apply timeouts and bounded retries to remote requests.
+- Define behavior for partitions where two sides disagree about membership.
+Done when: losing a node doesn't hang requests indefinitely, and recovery doesn't create conflicting membership updates.
+
+
+
+Phase 5
+Days 11–14
+
+Build rebalancing and data movement
+- Compare old and new snapshots.
+- Identify keys or hash ranges whose desired owners changed.
+- Transfer affected cache entries in bounded batches.
+- Rate-limit background transfers to protect foreground requests.
+- Track progress, retry failures, and allow a rebalance to resume.
+Done when: a node join or removal causes controlled movement and the cluster converges without exhausting memory or saturating the network.
+
+
+
+Phase 6
+Days 15–18
+
+Integrate and benchmark
+- Connect the ring to a real cache store and transport.
+- Exercise node joins, crashes, network partitions, and restarts.
+- Measure lookup latency, allocation rate, rebalance throughput, and recovery time.
+- Run the race detector and a sustained load test.
+Done when: your correctness tests pass and performance measurements support your design decisions.
