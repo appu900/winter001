@@ -1,10 +1,9 @@
--include .env
-export
+.PHONY: build-authservice run-authservice
 
-.PHONY: build-api run-api
+AUTH_DIR := services/auth
 
-build-api:
-	go build -o bin/api ./cmd/api
+build-authservice:
+	go build -o bin/authservice ./$(AUTH_DIR)/cmd/server
 
-run-api:build-api
-	./bin/api
+run-authservice: build-authservice
+	set -a && . ./$(AUTH_DIR)/.env && set +a && ./bin/authservice
