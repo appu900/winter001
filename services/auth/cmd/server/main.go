@@ -10,6 +10,8 @@ import (
 
 	"github.com/appu900/winter/pkg/logger"
 	"github.com/appu900/winter/services/auth/internal/config"
+	"github.com/appu900/winter/services/auth/internal/db"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -34,6 +36,14 @@ func Bootstarp() error {
 	//context for graceful shudown server
 	graceShtdownContext, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	// check database connection
+	pgpool,err := db.NewPostgressInstance(graceShtdownContext,cfg.DatabaseUrl); 
+	log.Println(pgpool)
+	if err != nil {
+		return err
+	}
+	logger.Info("database connected",zap.String("databaseurl",cfg.DatabaseUrl))
 	return authApplication.Start(graceShtdownContext)
 
 }

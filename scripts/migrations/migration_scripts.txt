@@ -1,0 +1,13 @@
+//crrate migration files
+migrate create -ext sql -dir db/migrations -seq create_users_table
+
+// apply migrations 
+export DATABASE_URL="postgres://postgres:postgres@localhost:5432/myapp?sslmode=disable"
+migrate -path db/migrations -database "$DATABASE_URL" up
+
+// other migraton commands 
+migrate -path db/migrations -database "$DATABASE_URL" down 1      # undo last migration
+migrate -path db/migrations -database "$DATABASE_URL" version     # current version
+
+//chnage the table later use this 
+migrate create -ext sql -dir db/migrations -seq add_phone_to_users
